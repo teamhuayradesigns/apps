@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Generator</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior-y: contain;
+        }
+        /* Custom style for disabled elements */
+        .disabled-ui {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input:disabled, select:disabled {
+             opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Use monospaced numbers to prevent layout shift */
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        /* Custom styles for active button */
+        .sound-type-btn.active {
+            background-color: #2563eb; /* bg-blue-600 */
+            color: white;
+            border-color: #2563eb; /* border-blue-600 */
+        }
+        .dark .sound-type-btn.active {
+             background-color: #3b82f6; /* bg-blue-500 */
+             border-color: #3b82f6; /* border-blue-500 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900">
+
+    <!-- Main container for the PWA -->
+    <div class="w-full h-screen flex flex-col p-4 sm:h-auto sm:max-w-md sm:mx-auto sm:my-8 sm:rounded-2xl sm:shadow-lg sm:p-6 bg-white dark:bg-slate-800">
+        
+        <header class="text-center mb-4 flex-shrink-0 relative">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Generator</h1>
+            <p id="wavelength-display" class="text-sm text-gray-500 dark:text-gray-400 mt-1 tabular-nums"></p>
+             <button id="view-toggle-btn" class="absolute top-0 right-0 p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+                <svg id="icon-number" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-hash" viewBox="0 0 16 16">
+                    <path d="M8.39 12.648a1.32 1.32 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .493-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53h-1.212l.516-2.524h1.26c.43 0 .618-.227.618-.547 0-.313-.188-.524-.618-.524h-1.26l.5-2.445A.27.27 0 0 0 12.708 2H11.37c-.138 0-.246.055-.29.157l-.5 2.445h-1.214c-.421 0-.617.234-.617.547 0 .312.188.53.617.53h1.214l-.516 2.524H8.29c-.43 0-.618.227-.618-.547 0 .313.188.524.618.524h1.26l-.5 2.445a.27.27 0 0 0 .015.18zM6.59 4.595l-.5 2.445h-1.26c-.43 0-.618.227-.618-.547 0 .313.188.524.618.524h1.26l-.5 2.445A.27.27 0 0 0 5.292 11H6.63c.138 0 .246-.055.29-.157l.5-2.445h1.214c.421 0 .617-.234.617-.547 0-.312-.188-.53-.617-.53H7.834l.516-2.524h1.26c.43 0 .618-.227-.618-.547 0-.313-.188-.524-.618-.524h-1.26l-.5-2.445A.27.27 0 0 0 8.708 2H7.37c-.138 0-.246.055-.29-.157l-.5 2.445H6.59z"/>
+                </svg>
+                <svg id="icon-bargraph" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bar-chart-fill hidden" viewBox="0 0 16 16">
+                    <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z"/>
+                </svg>
+                <svg id="icon-spectrogram" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-reception-4 hidden" viewBox="0 0 16 16">
+                    <path d="M0 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zM4 9.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-4zm4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm4-7a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-11z"/>
+                </svg>
+                 <svg id="icon-waveform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-soundwave hidden" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5zm-2 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm-6 1.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 1 .5-.5zm8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 1 .5-.5zm-10 1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zm12 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5z"/>
+                </svg>
+                <svg id="icon-fft" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-graph-up hidden" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </button>
+        </header>
+
+        <main class="sm:flex-grow-0 overflow-y-auto space-y-4">
+            
+            <!-- Frequency Display -->
+            <div class="flex justify-center my-2 h-24">
+                <div id="frequency-value-wrapper" class="p-2 text-center w-auto cursor-pointer">
+                    <div id="frequency-text-display">
+                        <span id="frequency-value" class="text-4xl font-bold tabular-nums">440</span>
+                        <span id="frequency-unit" class="text-md ml-1">Hz</span>
+                    </div>
+                    <input type="number" id="frequency-main-input" class="hidden text-4xl font-bold tabular-nums bg-transparent text-center w-48 focus:outline-none">
+                </div>
+                <canvas id="visualizer-canvas" class="w-full h-full rounded-lg hidden"></canvas>
+            </div>
+
+            <!-- Explanation Box -->
+            <div id="explanation-box" class="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-sm text-gray-600 dark:text-gray-300">
+                <div data-type="sine">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Sine Wave</h3>
+                    <p>A pure, smooth tone with no overtones. The most basic building block of sound.</p>
+                </div>
+                <div data-type="square" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Square Wave</h3>
+                    <p>A harsher, brighter tone with odd-numbered harmonics. Sounds buzzy or electronic.</p>
+                </div>
+                <div data-type="sawtooth" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Sawtooth Wave</h3>
+                    <p>A very bright, rich, and buzzy tone containing all harmonics.</p>
+                </div>
+                <div data-type="triangle" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Triangle Wave</h3>
+                    <p>A sound between a sine and square wave, with a mellow, flute-like quality.</p>
+                </div>
+                <div data-type="sweep" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Frequency Sweep</h3>
+                    <p>A sine wave that smoothly glides from a start to an end frequency. Used for finding resonances.</p>
+                </div>
+                <div data-type="white" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">White Noise</h3>
+                    <p>Contains equal energy at all frequencies. Sounds like static or hiss.</p>
+                </div>
+                <div data-type="pink" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Pink Noise</h3>
+                    <p>Energy decreases as frequency increases. Sounds more balanced and natural than white noise.</p>
+                </div>
+                <div data-type="brown" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Brown Noise</h3>
+                    <p>Has more energy at lower frequencies. Sounds deeper, like a heavy waterfall or thunder.</p>
+                </div>
+                 <div data-type="warble" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Warble Tone</h3>
+                    <p>A sine wave that rapidly fluctuates around a center frequency. Excellent for finding rattles.</p>
+                </div>
+                <div data-type="imd" class="hidden">
+                    <h3 class="font-bold text-gray-800 dark:text-white">IMD Test</h3>
+                    <p>Plays two tones (60 Hz & 7 kHz) simultaneously to test for Intermodulation Distortion in audio equipment.</p>
+                </div>
+            </div>
+
+            <!-- Sound Type Buttons -->
+            <div>
+                <label class="font-semibold text-gray-700 dark:text-gray-300 mb-2 block text-sm">Wave Form and Test Tones</label>
+                <div id="sound-type-buttons" class="grid grid-cols-5 gap-2 text-center">
+                    <button data-type="sine" class="sound-type-btn active p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Sine</button>
+                    <button data-type="square" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Square</button>
+                    <button data-type="sawtooth" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Saw</button>
+                    <button data-type="triangle" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Tri</button>
+                    <button data-type="sweep" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Sweep</button>
+                    <button data-type="white" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">White</button>
+                    <button data-type="pink" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Pink</button>
+                    <button data-type="brown" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Brown</button>
+                    <button data-type="warble" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">Warble</button>
+                    <button data-type="imd" class="sound-type-btn p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300">IMD</button>
+                </div>
+            </div>
+            
+            <!-- Static Frequency Control -->
+            <div id="frequency-control-wrapper">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="frequency" class="font-semibold text-gray-700 dark:text-gray-300 text-sm">Frequency</label>
+                     <div id="freq-slider-value-wrapper" class="flex items-center space-x-1 font-semibold px-2 py-0.5 rounded-full text-xs">
+                        <input type="number" id="freq-slider-input" value="440" class="w-16 p-1 text-center bg-transparent tabular-nums">
+                        <span>Hz</span>
+                    </div>
+                </div>
+                <input type="range" id="frequency" min="5" max="20000" value="440" step="1" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+            
+            <!-- Gain Control -->
+            <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="gain" class="font-semibold text-gray-700 dark:text-gray-300 text-sm">Gain</label>
+                    <div id="gain-value-wrapper" class="flex items-center space-x-2 font-semibold px-2 py-0.5 rounded-full text-xs">
+                        <input type="number" id="gain-input" value="-7.0" step="0.1" class="w-16 p-1 text-center bg-transparent tabular-nums">
+                        <span>dB</span>
+                    </div>
+                </div>
+                <input type="range" id="gain" min="-40" max="10" value="-7" step="0.1" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Frequency Sweep Control -->
+            <div id="sweep-params" class="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700 hidden">
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div>
+                        <label for="start-freq" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Start Freq (Hz)</label>
+                        <input type="number" id="start-freq" value="100" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm placeholder-gray-500 dark:text-white" placeholder="e.g. 100">
+                    </div>
+                    <div>
+                        <label for="end-freq" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">End Freq (Hz)</label>
+                        <input type="number" id="end-freq" value="5000" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm placeholder-gray-500 dark:text-white" placeholder="e.g. 5000">
+                    </div>
+                    <div>
+                        <label for="sweep-time" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Duration (s)</label>
+                        <input type="number" id="sweep-time" value="5" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm placeholder-gray-500 dark:text-white" placeholder="e.g. 5">
+                    </div>
+                    <div>
+                        <label for="sweep-type" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Scale</label>
+                        <select id="sweep-type" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:text-white">
+                            <option value="linear">Linear</option>
+                            <option value="logarithmic">Logarithmic</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Warble Tone Control -->
+            <div id="warble-params" class="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700 hidden">
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div>
+                        <label for="warble-center-freq" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Center Freq (Hz)</label>
+                        <input type="number" id="warble-center-freq" value="1000" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label for="warble-depth" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Depth (Hz)</label>
+                        <input type="number" id="warble-depth" value="50" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">
+                    </div>
+                     <div>
+                        <label for="warble-speed" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Speed (Hz)</label>
+                        <input type="number" id="warble-speed" value="5" class="w-full p-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Action Buttons Footer -->
+        <footer class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <button id="play-stop-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all">Play</button>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all UI elements
+            const elements = {
+                freqSlider: document.getElementById('frequency'),
+                freqValue: document.getElementById('frequency-value'),
+                freqValueWrapper: document.getElementById('frequency-value-wrapper'),
+                freqUnit: document.getElementById('frequency-unit'),
+                freqSliderInput: document.getElementById('freq-slider-input'),
+                freqSliderValueWrapper: document.getElementById('freq-slider-value-wrapper'),
+                frequencyMainInput: document.getElementById('frequency-main-input'),
+                frequencyTextDisplay: document.getElementById('frequency-text-display'),
+                gainSlider: document.getElementById('gain'),
+                gainInput: document.getElementById('gain-input'),
+                gainValueWrapper: document.getElementById('gain-value-wrapper'),
+                soundTypeButtons: document.getElementById('sound-type-buttons'),
+                playStopButton: document.getElementById('play-stop-button'),
+                startFreq: document.getElementById('start-freq'),
+                endFreq: document.getElementById('end-freq'),
+                sweepTime: document.getElementById('sweep-time'),
+                sweepType: document.getElementById('sweep-type'),
+                freqControlWrapper: document.getElementById('frequency-control-wrapper'),
+                sweepParams: document.getElementById('sweep-params'),
+                warbleParams: document.getElementById('warble-params'),
+                warbleCenterFreq: document.getElementById('warble-center-freq'),
+                warbleDepth: document.getElementById('warble-depth'),
+                warbleSpeed: document.getElementById('warble-speed'),
+                visualizerCanvas: document.getElementById('visualizer-canvas'),
+                viewToggleButton: document.getElementById('view-toggle-btn'),
+                iconNumber: document.getElementById('icon-number'),
+                iconBarGraph: document.getElementById('icon-bargraph'),
+                iconSpectrogram: document.getElementById('icon-spectrogram'),
+                iconWaveform: document.getElementById('icon-waveform'),
+                iconFFT: document.getElementById('icon-fft'),
+                wavelengthDisplay: document.getElementById('wavelength-display'),
+                explanationBox: document.getElementById('explanation-box'),
+            };
+
+            let audioContext, sourceNode, gainNode, analyser, isPlaying = false, animationFrameId = null, sweepTimeoutId = null;
+            let displayedFrequency = 440;
+            let visualizerCtx;
+            let currentViewMode = 0; // 0: Number, 1: Bar Graph, 2: Spectrogram, 3: Waveform, 4: FFT
+
+            const noiseProcessorCode = `
+                class NoiseProcessor extends AudioWorkletProcessor {
+                    constructor() {
+                        super();
+                        this.pink = { b0: 0, b1: 0, b2: 0, b3: 0, b4: 0, b5: 0, b6: 0 };
+                        this.brownLastOut = 0.0;
+                        this.noiseType = 'white';
+                        this.port.onmessage = e => { if (e.data.type) this.noiseType = e.data.type; };
+                    }
+                    process(inputs, outputs) {
+                        const out = outputs[0][0];
+                        for (let i = 0; i < out.length; i++) {
+                            const white = Math.random() * 2 - 1;
+                            if (this.noiseType === 'white') {
+                                out[i] = white;
+                            } else if (this.noiseType === 'pink') {
+                                this.pink.b0 = 0.99886 * this.pink.b0 + white * 0.0555179;
+                                this.pink.b1 = 0.99332 * this.pink.b1 + white * 0.0750759;
+                                this.pink.b2 = 0.96900 * this.pink.b2 + white * 0.1538520;
+                                this.pink.b3 = 0.86650 * this.pink.b3 + white * 0.3104856;
+                                this.pink.b4 = 0.55000 * this.pink.b4 + white * 0.5329522;
+                                this.pink.b5 = -0.7616 * this.pink.b5 - white * 0.0168980;
+                                out[i] = (this.pink.b0 + this.pink.b1 + this.pink.b2 + this.pink.b3 + this.pink.b4 + this.pink.b5 + this.pink.b6 + white * 0.5362) * 0.11;
+                                this.pink.b6 = white * 0.115926;
+                            } else if (this.noiseType === 'brown') {
+                                this.brownLastOut = (this.brownLastOut + (0.02 * white)) / 1.02;
+                                out[i] = this.brownLastOut * 3.5; // Scale for more output
+                            }
+                        }
+                        return true;
+                    }
+                }
+                registerProcessor('noise-processor', NoiseProcessor);`;
+            const blob = new Blob([noiseProcessorCode], { type: 'application/javascript' });
+            const noiseProcessorUrl = URL.createObjectURL(blob);
+            
+            const dbToLinear = db => Math.pow(10, db / 20);
+
+            async function playSound() {
+                if (isPlaying) return;
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                visualizerCtx = elements.visualizerCanvas.getContext('2d');
+                
+                const activeBtn = elements.soundTypeButtons.querySelector('.active');
+                const soundType = activeBtn.dataset.type;
+                const isNoise = ['white', 'pink', 'brown'].includes(soundType);
+                const isSweep = soundType === 'sweep';
+                const isWarble = soundType === 'warble';
+                const isIMD = soundType === 'imd';
+
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 8192;
+                analyser.minDecibels = -90;
+                analyser.maxDecibels = -10;
+                analyser.smoothingTimeConstant = 0.85;
+
+                gainNode = audioContext.createGain();
+                gainNode.gain.setValueAtTime(dbToLinear(elements.gainSlider.value), audioContext.currentTime);
+
+                if (isNoise) {
+                    await audioContext.audioWorklet.addModule(noiseProcessorUrl);
+                    sourceNode = new AudioWorkletNode(audioContext, 'noise-processor');
+                    sourceNode.port.postMessage({ type: soundType });
+                } else if (isIMD) {
+                    const osc1 = audioContext.createOscillator();
+                    const osc2 = audioContext.createOscillator();
+                    osc1.frequency.value = 60;
+                    osc2.frequency.value = 7000;
+                    osc1.start();
+                    osc2.start();
+                    sourceNode = [osc1, osc2];
+                } else {
+                    sourceNode = audioContext.createOscillator();
+                    sourceNode.type = isSweep || isWarble ? 'sine' : soundType;
+                    
+                    if (isSweep) {
+                        const start = parseFloat(elements.startFreq.value) || 20;
+                        let end = parseFloat(elements.endFreq.value) || 1000;
+                        const time = parseFloat(elements.sweepTime.value) || 5;
+                        const type = elements.sweepType.value;
+                        
+                        displayedFrequency = start;
+                        sourceNode.frequency.setValueAtTime(start, audioContext.currentTime);
+                        if (type === 'logarithmic') {
+                            if (end <= 0) end = 1;
+                            sourceNode.frequency.exponentialRampToValueAtTime(end, audioContext.currentTime + time);
+                        } else {
+                            sourceNode.frequency.linearRampToValueAtTime(end, audioContext.currentTime + time);
+                        }
+                        sweepTimeoutId = setTimeout(stopSound, time * 1000);
+                    } else if (isWarble) {
+                        const centerFreq = parseFloat(elements.warbleCenterFreq.value) || 1000;
+                        const depth = parseFloat(elements.warbleDepth.value) || 50;
+                        const speed = parseFloat(elements.warbleSpeed.value) || 5;
+
+                        const lfo = audioContext.createOscillator();
+                        lfo.frequency.value = speed;
+                        const lfoGain = audioContext.createGain();
+                        lfoGain.gain.value = depth;
+                        lfo.connect(lfoGain).connect(sourceNode.frequency);
+                        lfo.start();
+                        sourceNode.frequency.setValueAtTime(centerFreq, audioContext.currentTime);
+                    } else {
+                        displayedFrequency = parseFloat(elements.freqSlider.value);
+                        sourceNode.frequency.setValueAtTime(elements.freqSlider.value, audioContext.currentTime);
+                    }
+                    sourceNode.start();
+                }
+
+                if (Array.isArray(sourceNode)) {
+                    sourceNode.forEach(node => node.connect(gainNode));
+                } else {
+                    sourceNode.connect(gainNode);
+                }
+                gainNode.connect(audioContext.destination);
+                gainNode.connect(analyser);
+
+                isPlaying = true;
+                updatePlayButtonUI(true);
+                visualize();
+            }
+
+            function stopSound() {
+                if (!isPlaying) return;
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (sweepTimeoutId) clearTimeout(sweepTimeoutId);
+                
+                animationFrameId = null;
+                sweepTimeoutId = null;
+
+                if (Array.isArray(sourceNode)) {
+                    sourceNode.forEach(node => node.stop());
+                } else if (sourceNode?.stop) {
+                    sourceNode.stop();
+                }
+                
+                if (sourceNode) {
+                    if (Array.isArray(sourceNode)) {
+                        sourceNode.forEach(node => node.disconnect());
+                    } else {
+                        sourceNode.disconnect();
+                    }
+                }
+
+                if (analyser) analyser.disconnect();
+                if (gainNode) gainNode.disconnect();
+                if (audioContext) audioContext.close();
+                
+                isPlaying = false;
+                updatePlayButtonUI(false);
+                const staticFreq = parseFloat(elements.freqSlider.value);
+                displayedFrequency = staticFreq;
+                updateFrequencyDisplay(staticFreq);
+            }
+
+            function visualize() {
+                if (!isPlaying) {
+                    const staticFreq = parseFloat(elements.freqSlider.value);
+                    displayedFrequency = staticFreq;
+                    updateFrequencyDisplay(staticFreq);
+                    return;
+                }
+                
+                if (currentViewMode === 1 || currentViewMode === 2) {
+                    const freqDataArray = new Uint8Array(analyser.frequencyBinCount);
+                    analyser.getByteFrequencyData(freqDataArray);
+                    if (currentViewMode === 1) drawBarGraph(freqDataArray);
+                    if (currentViewMode === 2) drawSpectrogram(freqDataArray);
+                } else if (currentViewMode === 3) {
+                    const timeDomainDataArray = new Uint8Array(analyser.fftSize);
+                    analyser.getByteTimeDomainData(timeDomainDataArray);
+                    drawWaveform(timeDomainDataArray);
+                } else if (currentViewMode === 4) {
+                    const floatFreqDataArray = new Float32Array(analyser.frequencyBinCount);
+                    analyser.getFloatFrequencyData(floatFreqDataArray);
+                    drawFFTGraph(floatFreqDataArray);
+                }
+
+                const freqBufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(freqBufferLength);
+                analyser.getByteFrequencyData(dataArray);
+
+                let maxVal = -Infinity, maxIndex = -1;
+                for (let i = 0; i < freqBufferLength; i++) {
+                    if (dataArray[i] > maxVal) {
+                        maxVal = dataArray[i];
+                        maxIndex = i;
+                    }
+                }
+
+                const detectedFreq = maxIndex * audioContext.sampleRate / analyser.fftSize;
+                
+                if (detectedFreq > 0) {
+                    displayedFrequency += (detectedFreq - displayedFrequency) * 0.2;
+                }
+
+                updateFrequencyDisplay(displayedFrequency);
+                animationFrameId = requestAnimationFrame(visualize);
+            }
+
+            function drawSpectrogram(dataArray) {
+                const canvas = elements.visualizerCanvas;
+                const ctx = visualizerCtx;
+                const height = canvas.height;
+                const width = canvas.width;
+                
+                ctx.drawImage(canvas, -1, 0, width, height);
+                
+                const bufferLength = analyser.frequencyBinCount;
+                for (let i = 0; i < bufferLength; i++) {
+                    const value = dataArray[i];
+                    const percent = value / 255;
+                    const y = height - (i / bufferLength) * height;
+
+                    const hue = 240 - (percent * 240);
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    ctx.fillRect(width - 1, y, 1, 1);
+                }
+            }
+
+            function drawBarGraph(dataArray) {
+                const canvas = elements.visualizerCanvas;
+                const ctx = visualizerCtx;
+                const height = canvas.height;
+                const width = canvas.width;
+
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, width, height);
+
+                const numBars = 64;
+                const barWidth = width / numBars;
+                const minFreq = 20;
+                const maxFreq = 20000;
+                const logMin = Math.log(minFreq);
+                const logMax = Math.log(maxFreq);
+                const logRange = logMax - logMin;
+                const freqPerBin = audioContext.sampleRate / analyser.fftSize;
+
+                for (let i = 0; i < numBars; i++) {
+                    const startFreq = Math.exp(logMin + (i / numBars) * logRange);
+                    const endFreq = Math.exp(logMin + ((i + 1) / numBars) * logRange);
+
+                    const startIndex = Math.round(startFreq / freqPerBin);
+                    const endIndex = Math.round(endFreq / freqPerBin);
+
+                    let maxVal = 0;
+                    for (let j = startIndex; j < endIndex; j++) {
+                        if (dataArray[j] > maxVal) {
+                            maxVal = dataArray[j];
+                        }
+                    }
+
+                    const barHeight = (maxVal / 255) * height;
+                    const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+                    gradient.addColorStop(0, '#3b82f6'); // Blue
+                    gradient.addColorStop(1, '#ef4444'); // Red
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+                }
+            }
+            
+            function drawWaveform(dataArray) {
+                const canvas = elements.visualizerCanvas;
+                const ctx = visualizerCtx;
+                const height = canvas.height;
+                const width = canvas.width;
+                const bufferLength = analyser.fftSize;
+
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, width, height);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb'; // blue-400 or blue-600
+                ctx.beginPath();
+
+                const sliceWidth = width * 1.0 / bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * height / 2;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    x += sliceWidth;
+                }
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+            }
+
+            function drawFFTGraph(dataArray) {
+                const canvas = elements.visualizerCanvas;
+                const ctx = visualizerCtx;
+                const height = canvas.height;
+                const width = canvas.width;
+                const bufferLength = analyser.frequencyBinCount;
+
+                ctx.fillStyle = 'rgb(55, 65, 81)'; // gray-700
+                ctx.fillRect(0, 0, width, height);
+
+                const barWidth = (width / bufferLength) * 2.5;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] + 140) * (height / 140);
+                    const g = barHeight + 100;
+                    const r = 250 - barHeight;
+                    ctx.fillStyle = `rgb(${r}, ${g}, 50)`;
+                    ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                }
+            }
+            
+            function updatePlayButtonUI(playing) {
+                const button = elements.playStopButton;
+                button.textContent = playing ? 'Stop' : 'Play';
+                button.classList.toggle('bg-red-600', playing);
+                button.classList.toggle('hover:bg-red-700', playing);
+                button.classList.toggle('bg-blue-600', !playing);
+                button.classList.toggle('hover:bg-blue-700', !playing);
+            }
+            
+            function updateUIState() {
+                const activeBtn = elements.soundTypeButtons.querySelector('.active');
+                const soundType = activeBtn.dataset.type;
+                const isNoise = ['white', 'pink', 'brown'].includes(soundType);
+                const isSweep = soundType === 'sweep';
+                const isWarble = soundType === 'warble';
+                const isIMD = soundType === 'imd';
+
+                elements.freqControlWrapper.classList.toggle('disabled-ui', isNoise || isSweep || isWarble || isIMD);
+                elements.freqSlider.disabled = isNoise || isSweep || isWarble || isIMD;
+                elements.freqSliderInput.disabled = isNoise || isSweep || isWarble || isIMD;
+                
+                elements.sweepParams.classList.toggle('hidden', !isSweep);
+                elements.warbleParams.classList.toggle('hidden', !isWarble);
+
+                // Update explanation
+                elements.explanationBox.querySelectorAll('[data-type]').forEach(el => {
+                    el.classList.toggle('hidden', el.dataset.type !== soundType);
+                });
+            }
+
+            function updateGainColor(db) {
+                const slider = elements.gainSlider;
+                const wrapper = elements.gainValueWrapper;
+
+                const colors = {
+                    green: { slider: 'accent-green-600', wrapper: ['bg-green-50', 'text-green-600', 'dark:bg-green-900/50', 'dark:text-green-400'] },
+                    yellow: { slider: 'accent-yellow-500', wrapper: ['bg-yellow-50', 'text-yellow-600', 'dark:bg-yellow-900/50', 'dark:text-yellow-400'] },
+                    red: { slider: 'accent-red-600', wrapper: ['bg-red-50', 'text-red-600', 'dark:bg-red-900/50', 'dark:text-red-400'] }
+                };
+
+                slider.classList.remove(...Object.values(colors).map(c => c.slider));
+                wrapper.classList.remove(...Object.values(colors).flatMap(c => c.wrapper));
+
+                let activeColor;
+                if (db < -5) activeColor = colors.green;
+                else if (db <= 0) activeColor = colors.yellow;
+                else activeColor = colors.red;
+
+                slider.classList.add(activeColor.slider);
+                wrapper.classList.add(...activeColor.wrapper);
+            }
+
+            function updateFrequencyDisplay(freq) {
+                const roundedFreq = Math.round(freq);
+                elements.freqValue.textContent = roundedFreq;
+                elements.freqSliderInput.value = roundedFreq;
+                updateFrequencyColor(freq);
+                updateWavelengthDisplay(freq);
+            }
+
+            function updateWavelengthDisplay(freq) {
+                if (freq > 0) {
+                    const speedOfSound = 1125; // feet per second
+                    const wavelengthFeet = speedOfSound / freq;
+                    
+                    const feet = Math.floor(wavelengthFeet);
+                    const inches = (wavelengthFeet - feet) * 12;
+
+                    elements.wavelengthDisplay.textContent = `≈ ${feet}' ${inches.toFixed(1)}"`;
+                } else {
+                    elements.wavelengthDisplay.textContent = `—`;
+                }
+            }
+
+            function updateFrequencyColor(freq) {
+                const slider = elements.freqSlider;
+                const valueText = elements.freqValue;
+                const unitText = elements.freqUnit;
+                const sliderWrapper = elements.freqSliderValueWrapper;
+
+                const colors = {
+                    green: { slider: 'accent-green-600', wrapper: ['bg-green-50', 'dark:bg-green-900/50'], text: ['text-green-700', 'dark:text-green-300'] },
+                    yellow: { slider: 'accent-yellow-500', wrapper: ['bg-yellow-50', 'dark:bg-yellow-900/50'], text: ['text-yellow-700', 'dark:text-yellow-300'] },
+                    red: { slider: 'accent-red-600', wrapper: ['bg-red-50', 'dark:bg-red-900/50'], text: ['text-red-700', 'dark:text-red-300'] }
+                };
+                
+                const allSlider = ['accent-green-600', 'accent-yellow-500', 'accent-red-600'];
+                const allWrapper = Object.values(colors).flatMap(c => c.wrapper);
+                const allText = Object.values(colors).flatMap(c => c.text);
+
+                slider.classList.remove(...allSlider);
+                valueText.classList.remove(...allText);
+                unitText.classList.remove(...allText);
+                sliderWrapper.classList.remove(...allWrapper, ...allText);
+
+                let activeColor;
+                if (freq < 250) activeColor = colors.green;
+                else if (freq <= 4000) activeColor = colors.yellow;
+                else activeColor = colors.red;
+
+                slider.classList.add(activeColor.slider);
+                valueText.classList.add(...activeColor.text);
+                unitText.classList.add(...activeColor.text);
+                sliderWrapper.classList.add(...activeColor.wrapper);
+                sliderWrapper.classList.add(...activeColor.text);
+            }
+
+            function updateView() {
+                elements.freqValueWrapper.classList.toggle('hidden', currentViewMode !== 0);
+                elements.visualizerCanvas.classList.toggle('hidden', currentViewMode === 0);
+                elements.iconNumber.classList.toggle('hidden', currentViewMode !== 0);
+                elements.iconBarGraph.classList.toggle('hidden', currentViewMode !== 1);
+                elements.iconSpectrogram.classList.toggle('hidden', currentViewMode !== 2);
+                elements.iconWaveform.classList.toggle('hidden', currentViewMode !== 3);
+                elements.iconFFT.classList.toggle('hidden', currentViewMode !== 4);
+            }
+
+            // Event Listeners
+            elements.playStopButton.addEventListener('click', () => {
+                if (isPlaying) stopSound();
+                else playSound();
+            });
+
+            elements.viewToggleButton.addEventListener('click', () => {
+                currentViewMode = (currentViewMode + 1) % 5; // Now cycles through 5 modes
+                updateView();
+            });
+
+            elements.soundTypeButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.soundTypeButtons.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    updateUIState();
+                    if (isPlaying) {
+                        stopSound();
+                        playSound();
+                    }
+                }
+            });
+            
+            elements.freqSlider.addEventListener('input', () => {
+                const freq = elements.freqSlider.value;
+                updateFrequencyDisplay(freq);
+                if (isPlaying && sourceNode?.frequency) {
+                    sourceNode.frequency.setTargetAtTime(freq, audioContext.currentTime, 0.01);
+                }
+            });
+
+            elements.freqSliderInput.addEventListener('input', () => {
+                let freq = parseInt(elements.freqSliderInput.value, 10);
+                if (isNaN(freq)) return;
+                if (freq < 5) freq = 5;
+                if (freq > 20000) freq = 20000;
+
+                elements.freqSlider.value = freq;
+                updateFrequencyDisplay(freq);
+                if (isPlaying && sourceNode?.frequency) {
+                    sourceNode.frequency.setTargetAtTime(freq, audioContext.currentTime, 0.01);
+                }
+            });
+
+            elements.gainSlider.addEventListener('input', () => {
+                const db = elements.gainSlider.value;
+                elements.gainInput.value = parseFloat(db).toFixed(1);
+                updateGainColor(db);
+                if (isPlaying && gainNode) {
+                    gainNode.gain.setTargetAtTime(dbToLinear(db), audioContext.currentTime, 0.01);
+                }
+            });
+
+            elements.gainInput.addEventListener('input', () => {
+                let db = parseFloat(elements.gainInput.value);
+                if (isNaN(db)) return;
+                if (db < -40) db = -40;
+                if (db > 10) db = 10;
+
+                elements.gainSlider.value = db;
+                updateGainColor(db);
+                if (isPlaying && gainNode) {
+                    gainNode.gain.setTargetAtTime(dbToLinear(db), audioContext.currentTime, 0.01);
+                }
+            });
+
+            elements.freqValueWrapper.addEventListener('click', () => {
+                if (currentViewMode === 0) {
+                    elements.frequencyTextDisplay.classList.add('hidden');
+                    elements.frequencyMainInput.classList.remove('hidden');
+                    elements.frequencyMainInput.value = elements.freqValue.textContent;
+                    elements.frequencyMainInput.focus();
+                    elements.frequencyMainInput.select();
+                }
+            });
+
+            function handleMainFreqInput() {
+                let freq = parseInt(elements.frequencyMainInput.value, 10);
+                if (isNaN(freq)) {
+                    freq = parseInt(elements.freqSlider.value, 10);
+                }
+                if (freq < 5) freq = 5;
+                if (freq > 20000) freq = 20000;
+
+                elements.freqSlider.value = freq;
+                updateFrequencyDisplay(freq);
+                if (isPlaying && sourceNode?.frequency) {
+                    sourceNode.frequency.setTargetAtTime(freq, audioContext.currentTime, 0.01);
+                }
+
+                elements.frequencyTextDisplay.classList.remove('hidden');
+                elements.frequencyMainInput.classList.add('hidden');
+            }
+
+            elements.frequencyMainInput.addEventListener('blur', handleMainFreqInput);
+            elements.frequencyMainInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    elements.frequencyMainInput.blur();
+                }
+            });
+            
+            // Initial UI setup
+            updateUIState();
+            updateGainColor(elements.gainSlider.value);
+            updateFrequencyDisplay(elements.freqSlider.value);
+        });
+    </script>
+
+</body>
+</html>
