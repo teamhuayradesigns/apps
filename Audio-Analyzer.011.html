@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Audio Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Audio Tools">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkF1ZGlvIFRvb2xzIiwKICAic2hvcnRfbmFtZSI6ICJBdWRpb1Rvb2xzIiwKICAiZGVzY3JpcHRpb24iOiAiQW4gYXBwbGljYXRpb24gZm9yIGFuYWx5emluZyBhdWRpbyBzaWduYWxzLCBpbmNsdWRpbmcgVEhEK04gYW5kIHNwZWFrZXIgcG9sYXJpdHkuIiwKICAic3RhcnRfdXJsIjogIi9BdWRpby1BbmFseXplci4wMTAuaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGEwYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwYTBhMGEiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJpY29uLTE5Mi5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaWNvbi01MTIucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+        }
+        .app-window {
+            background-color: #171717; /* neutral-900 */
+            border: 1px solid #262626; /* neutral-800 */
+        }
+        .btn-start { background: linear-gradient(145deg, #22c55e, #16a34a); }
+        .btn-start:hover { background: linear-gradient(145deg, #16a34a, #15803d); }
+        .btn-stop { background: linear-gradient(145deg, #ef4444, #dc2626); }
+        .btn-stop:hover { background: linear-gradient(145deg, #dc2626, #b91c1c); }
+        .btn-secondary { background-color: #3b82f6; }
+        .btn-secondary:hover { background-color: #2563eb; }
+
+        .tab-btn {
+            border-color: transparent;
+            color: #a3a3a3; /* neutral-400 */
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+            border-bottom-width: 2px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #e5e5e5; /* neutral-200 */
+            border-color: #737373; /* neutral-500 */
+        }
+        .tab-btn.active {
+            border-color: #3b82f6; /* blue-500 */
+            color: #60a5fa; /* blue-400 */
+        }
+
+        .btn-tab { background-color: #3a3a3a; color: #a3a3a3; }
+        .btn-tab.active { background-color: #3b82f6; color: white; }
+
+        .clipping-active { color: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .clipping-inactive { color: #22c55e; }
+
+        .details-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-in-out;
+        }
+
+        #polarity-result .in-phase {
+            color: #22c55e; /* green-500 */
+        }
+        #polarity-result .out-of-phase {
+            color: #ef4444; /* red-500 */
+        }
+    </style>
+</head>
+<body class="text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md mx-auto rounded-2xl shadow-2xl app-window overflow-hidden">
+        
+        <header class="p-5 pb-0 relative">
+            <div class="absolute top-3 left-3 text-xs text-gray-500 font-mono">v1.0.1.1</div>
+            <button id="logsBtn" class="absolute top-3 right-3 flex items-center space-x-1 px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-gray-300 rounded transition">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span>Logs</span>
+            </button>
+            <h1 class="text-2xl font-bold text-center text-gray-100">Audio Tools</h1>
+            <div class="mt-4 border-b border-neutral-800">
+                <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                    <button id="analyzer-tab" class="tab-btn active">Analyzer</button>
+                    <button id="polarity-tab" class="tab-btn">Polarity</button>
+                </nav>
+            </div>
+        </header>
+
+        <div id="app-content" class="p-5 space-y-5">
+            
+            <div id="analyzer-tool">
+                <p id="status" class="text-gray-500 text-sm h-4 transition-all text-center mb-4">Press 'Start' to begin.</p>
+                <div class="bg-black/20 p-5 rounded-xl text-center">
+                    <h2 class="text-lg font-medium text-gray-400">THD + Noise</h2>
+                    <div id="thdResult" class="text-6xl font-bold text-green-400 tracking-tighter">--.--%</div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 text-center mt-5">
+                    <div class="bg-black/20 p-3 rounded-lg"><h3 class="text-sm font-medium text-gray-400">Peak THD+N</h3><p id="peakThdResult" class="text-xl font-semibold">--.--%</p></div>
+                    <div class="bg-black/20 p-3 rounded-lg"><h3 class="text-sm font-medium text-gray-400">Clipping</h3><p id="clippingIndicator" class="text-xl font-semibold clipping-inactive">OK</p></div>
+                    <div class="bg-black/20 p-3 rounded-lg"><h3 class="text-sm font-medium text-gray-400">Clip Count</h3><p id="clipCounter" class="text-xl font-semibold">0</p></div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mt-5 mb-2">
+                         <h3 class="text-lg font-semibold">Visualizer</h3>
+                         <div id="visualizer-tabs" class="flex space-x-1 p-1 bg-black/20 rounded-lg">
+                            <button id="scopeTab" class="btn-tab active px-3 py-1 text-sm rounded-md transition-all">Waveform</button>
+                            <button id="fftTab" class="btn-tab px-3 py-1 text-sm rounded-md transition-all">Spectrum</button>
+                         </div>
+                    </div>
+                    <div class="bg-black/20 p-2 rounded-xl">
+                        <canvas id="scopeCanvas" class="w-full h-40 rounded-lg"></canvas>
+                        <canvas id="fftCanvas" class="w-full h-40 rounded-lg hidden"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <button id="detailsToggleBtn" class="w-full flex justify-between items-center text-left bg-black/20 p-3 mt-5 rounded-lg hover:bg-neutral-700 transition">
+                        <span class="font-semibold">Details & Settings</span>
+                        <svg id="detailsArrow" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="detailsPanel" class="details-panel">
+                        <div class="pt-3 space-y-4">
+                            <div class="bg-black/20 p-3 rounded-lg text-center"><h3 class="text-md font-semibold mb-2 text-gray-300">Harmonic Levels (dBFS)</h3><div class="grid grid-cols-3 gap-2 text-sm"><div><span class="font-bold text-gray-400">2nd</span><div id="h2_level">-inf</div></div><div><span class="font-bold text-gray-400">3rd</span><div id="h3_level">-inf</div></div><div><span class="font-bold text-gray-400">4th</span><div id="h4_level">-inf</div></div></div></div>
+                            <div class="bg-black/20 p-3 rounded-lg space-y-3">
+                                <div><label for="noiseGateSlider" class="block text-sm font-medium text-gray-300">Noise Gate: <span id="noiseGateValue">-60</span> dB</label><input type="range" id="noiseGateSlider" min="-100" max="-30" value="-60" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-1"></div>
+                                <div><label for="clippingSensitivitySlider" class="block text-sm font-medium text-gray-300">Clipping Sensitivity: <span id="clippingSensitivityValue">5</span> samples</label><input type="range" id="clippingSensitivitySlider" min="1" max="20" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 pt-5">
+                    <button id="analyzerToggleBtn" class="w-full py-3 px-4 text-lg font-bold text-white rounded-lg shadow-lg transition-all transform hover:scale-105 btn-start">Start</button>
+                    <button id="analyzerResetBtn" title="Reset Stats" class="flex-shrink-0 p-3 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 4l16 16"></path></svg></button>
+                </div>
+            </div>
+
+            <div id="polarity-tool" class="hidden">
+                <p class="text-gray-500 text-sm text-center mb-4">Click 'Test Polarity' to start continuous popping sounds for polarity detection. The test will automatically stop when polarity is detected or after 1 minute. Click again to stop manually. Microphone access is required.</p>
+                <div id="polarity-result" class="text-center my-8"><div class="text-6xl font-bold text-gray-500">--</div></div>
+                <button id="polarityTestBtn" class="w-full py-3 px-4 text-lg font-bold text-white rounded-lg shadow-lg transition-all transform hover:scale-105 btn-secondary">Test Polarity</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id="logsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-neutral-800 rounded-lg p-6 w-full max-w-2xl max-h-96 mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-100">Internal Logs</h2>
+                <button id="closeLogsBtn" class="text-gray-400 hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="bg-black rounded p-3 h-64 overflow-y-auto">
+                <div id="logsContent" class="text-xs text-green-400 font-mono whitespace-pre-wrap"></div>
+            </div>
+            <div class="mt-4 flex justify-end space-x-2">
+                <button id="clearLogsBtn" class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">Clear</button>
+                <button id="closeLogsBtn2" class="px-3 py-1 text-sm bg-neutral-600 hover:bg-neutral-700 text-white rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PWA Service Worker ---
+        if ('serviceWorker' in navigator) {
+            const swContent = `
+                const CACHE_NAME = 'audio-tools-cache-v1';
+                const urlsToCache = ['/Audio-Analyzer.010.html'];
+                self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
+                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+                self.addEventListener('activate', e => {
+                    const cacheWhitelist = [CACHE_NAME];
+                    e.waitUntil(caches.keys().then(names => Promise.all(names.map(name => !cacheWhitelist.includes(name) && caches.delete(name)))));
+                });
+            `;
+            const swBlob = new Blob([swContent], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swUrl).then(reg => console.log('ServiceWorker registration successful.', reg)).catch(err => console.log('ServiceWorker registration failed: ', err));
+        }
+
+        // --- Logging System ---
+        const Logger = (() => {
+            let logs = [];
+            const maxLogs = 100;
+
+            function addLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+                logs.push(logEntry);
+                
+                if (logs.length > maxLogs) {
+                    logs.shift();
+                }
+                
+                updateLogsDisplay();
+            }
+
+            function updateLogsDisplay() {
+                const logsContent = document.getElementById('logsContent');
+                if (logsContent) {
+                    logsContent.textContent = logs.join('\n');
+                    logsContent.scrollTop = logsContent.scrollHeight;
+                }
+            }
+
+            function clearLogs() {
+                logs = [];
+                updateLogsDisplay();
+            }
+
+            return {
+                info: (message) => addLog(message, 'info'),
+                warn: (message) => addLog(message, 'warn'),
+                error: (message) => addLog(message, 'error'),
+                debug: (message) => addLog(message, 'debug'),
+                clear: clearLogs
+            };
+        })();
+
+        // --- App Modules ---
+        const UI = (() => {
+            const dom = {
+                analyzerTab: document.getElementById('analyzer-tab'),
+                polarityTab: document.getElementById('polarity-tab'),
+                analyzerTool: document.getElementById('analyzer-tool'),
+                polarityTool: document.getElementById('polarity-tool'),
+                status: document.getElementById('status'),
+                thdResult: document.getElementById('thdResult'),
+                peakThdResult: document.getElementById('peakThdResult'),
+                clippingIndicator: document.getElementById('clippingIndicator'),
+                clipCounter: document.getElementById('clipCounter'),
+                scopeCanvas: document.getElementById('scopeCanvas'),
+                fftCanvas: document.getElementById('fftCanvas'),
+                analyzerToggleBtn: document.getElementById('analyzerToggleBtn'),
+                analyzerResetBtn: document.getElementById('analyzerResetBtn'),
+                scopeTab: document.getElementById('scopeTab'),
+                fftTab: document.getElementById('fftTab'),
+                detailsToggleBtn: document.getElementById('detailsToggleBtn'),
+                detailsPanel: document.getElementById('detailsPanel'),
+                detailsArrow: document.getElementById('detailsArrow'),
+                noiseGateSlider: document.getElementById('noiseGateSlider'),
+                noiseGateValue: document.getElementById('noiseGateValue'),
+                clippingSensitivitySlider: document.getElementById('clippingSensitivitySlider'),
+                clippingSensitivityValue: document.getElementById('clippingSensitivityValue'),
+                h2Level: document.getElementById('h2_level'),
+                h3Level: document.getElementById('h3_level'),
+                h4Level: document.getElementById('h4_level'),
+                polarityResult: document.getElementById('polarity-result'),
+                polarityTestBtn: document.getElementById('polarityTestBtn'),
+                logsBtn: document.getElementById('logsBtn'),
+                logsModal: document.getElementById('logsModal'),
+                closeLogsBtn: document.getElementById('closeLogsBtn'),
+                closeLogsBtn2: document.getElementById('closeLogsBtn2'),
+                clearLogsBtn: document.getElementById('clearLogsBtn'),
+            };
+
+            const scopeCtx = dom.scopeCanvas.getContext('2d');
+            const fftCtx = dom.fftCanvas.getContext('2d');
+
+            function clearAllVisuals() {
+                [scopeCtx, fftCtx].forEach(ctx => {
+                    const canvas = ctx.canvas;
+                    ctx.fillStyle = '#171717';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                });
+            }
+            
+            clearAllVisuals();
+
+            return {
+                dom,
+                updateThd(value, peak) {
+                    dom.thdResult.textContent = `${value.toFixed(4)}%`;
+                    if (value > peak) dom.peakThdResult.textContent = `${value.toFixed(4)}%`;
+                    if (value < 0.1) dom.thdResult.className = 'text-6xl font-bold text-green-400 tracking-tighter';
+                    else if (value < 1) dom.thdResult.className = 'text-6xl font-bold text-yellow-400 tracking-tighter';
+                    else dom.thdResult.className = 'text-6xl font-bold text-red-500 tracking-tighter';
+                },
+                updateClipping(isClipping, count) {
+                    if (isClipping) {
+                        dom.clippingIndicator.textContent = 'CLIPPED';
+                        dom.clippingIndicator.className = 'text-xl font-semibold clipping-active';
+                        dom.clipCounter.textContent = count;
+                    } else {
+                        dom.clippingIndicator.textContent = 'OK';
+                        dom.clippingIndicator.className = 'text-xl font-semibold clipping-inactive';
+                    }
+                },
+                resetAnalyzerUI() {
+                    dom.thdResult.textContent = '--.--%';
+                    dom.peakThdResult.textContent = '--.--%';
+                    dom.clipCounter.textContent = '0';
+                    dom.clippingIndicator.textContent = 'OK';
+                    dom.clippingIndicator.className = 'text-xl font-semibold clipping-inactive';
+                    dom.thdResult.className = 'text-6xl font-bold text-green-400 tracking-tighter';
+                    ['h2_level', 'h3_level', 'h4_level'].forEach(id => document.getElementById(id).textContent = "-inf");
+                },
+                setAnalyzerButtonState(isTesting) {
+                    if (isTesting) {
+                        dom.analyzerToggleBtn.textContent = 'Stop';
+                        dom.analyzerToggleBtn.classList.replace('btn-start', 'btn-stop');
+                        dom.status.textContent = 'Listening...';
+                    } else {
+                        dom.analyzerToggleBtn.textContent = 'Start';
+                        dom.analyzerToggleBtn.classList.replace('btn-stop', 'btn-start');
+                        dom.status.textContent = "Press 'Start' to begin.";
+                    }
+                },
+                updateHarmonics(levels) {
+                    dom.h2Level.textContent = levels.h2 ? levels.h2.toFixed(1) : "-inf";
+                    dom.h3Level.textContent = levels.h3 ? levels.h3.toFixed(1) : "-inf";
+                    dom.h4Level.textContent = levels.h4 ? levels.h4.toFixed(1) : "-inf";
+                },
+                showLowSignal() {
+                    dom.thdResult.textContent = 'Signal Low';
+                    dom.thdResult.className = 'text-5xl font-bold text-gray-500 tracking-tighter';
+                    ['h2_level', 'h3_level', 'h4_level'].forEach(id => document.getElementById(id).textContent = "-inf");
+                },
+                drawScope(data) {
+                    scopeCtx.fillStyle = 'rgba(0,0,0,0.1)';
+                    scopeCtx.fillRect(0, 0, dom.scopeCanvas.width, dom.scopeCanvas.height);
+                    scopeCtx.lineWidth = 2;
+                    scopeCtx.strokeStyle = '#3b82f6';
+                    scopeCtx.beginPath();
+                    const sliceWidth = dom.scopeCanvas.width * 1.0 / data.length;
+                    let x = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        const v = data[i] * 0.5 + 0.5;
+                        const y = v * dom.scopeCanvas.height;
+                        if (i === 0) scopeCtx.moveTo(x, y);
+                        else scopeCtx.lineTo(x, y);
+                        x += sliceWidth;
+                    }
+                    scopeCtx.stroke();
+                },
+                drawFFT(data) {
+                    fftCtx.fillStyle = 'rgba(0,0,0,0.1)';
+                    fftCtx.fillRect(0, 0, dom.fftCanvas.width, dom.fftCanvas.height);
+                    const barWidth = (dom.fftCanvas.width / (data.length * 0.8));
+                    let x = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        const barHeight = (data[i] + 140) * (dom.fftCanvas.height / 120);
+                        const hue = 120 - (barHeight * 1.5);
+                        fftCtx.fillStyle = `hsl(${hue}, 80%, 50%)`;
+                        fftCtx.fillRect(x, dom.fftCanvas.height - barHeight, barWidth, barHeight);
+                        x += barWidth;
+                    }
+                },
+                clearAllVisuals,
+                displayPolarityResult(isInPhase) {
+                    const resultDiv = dom.polarityResult;
+                    if (isInPhase === null) {
+                        resultDiv.innerHTML = `<div class="text-6xl font-bold text-gray-500">--</div>`;
+                        return;
+                    }
+                    resultDiv.innerHTML = isInPhase
+                        ? `<div class="text-6xl font-bold in-phase">In Phase</div>`
+                        : `<div class="text-6xl font-bold out-of-phase">Out of Phase</div>`;
+                }
+            };
+        })();
+
+        const Analyzer = (() => {
+            let audioContext, analyser, microphoneStream, animationFrameId;
+            let timeDomainData, frequencyData;
+            let isTesting = false;
+            let peakThd = 0;
+            let clipCount = 0;
+            let hasClippedInFrame = false;
+            let settings = { minSignalDb: -60.0, minConsecutiveClippedSamples: 5, fftSize: 8192, clippingThreshold: 0.99 };
+
+            function analyze() {
+                analyser.getFloatFrequencyData(frequencyData);
+                analyser.getFloatTimeDomainData(timeDomainData);
+
+                let maxDb = -Infinity, fundamentalBin = -1;
+                for (let i = 1; i < frequencyData.length; i++) {
+                    if (frequencyData[i] > maxDb) {
+                        maxDb = frequencyData[i];
+                        fundamentalBin = i;
+                    }
+                }
+
+                if (maxDb < settings.minSignalDb) {
+                    UI.showLowSignal();
+                } else {
+                    const nyquist = audioContext.sampleRate / 2;
+                    const fundamentalFreq = fundamentalBin * nyquist / frequencyData.length;
+                    const linearMagnitudes = frequencyData.map(db => Math.pow(10, db / 20));
+                    let fundamentalPower = 0;
+                    for (let i = -3; i <= 3; i++) {
+                        if (fundamentalBin + i >= 0 && fundamentalBin + i < linearMagnitudes.length) {
+                            fundamentalPower += Math.pow(linearMagnitudes[fundamentalBin + i], 2);
+                        }
+                    }
+                    let totalPower = linearMagnitudes.reduce((sum, val) => sum + Math.pow(val, 2), 0);
+                    let harmonicPower = Math.max(0, totalPower - fundamentalPower);
+                    const thd = Math.sqrt(harmonicPower) / Math.sqrt(fundamentalPower || 1);
+                    const thdPercent = thd * 100;
+                    if (thdPercent > peakThd) peakThd = thdPercent;
+                    UI.updateThd(thdPercent, peakThd);
+                    const h2Bin = Math.round(fundamentalBin * 2), h3Bin = Math.round(fundamentalBin * 3), h4Bin = Math.round(fundamentalBin * 4);
+                    UI.updateHarmonics({ h2: frequencyData[h2Bin], h3: frequencyData[h3Bin], h4: frequencyData[h4Bin] });
+                }
+
+                let consecutiveClippedSamples = 0, justClipped = false;
+                for (let i = 0; i < timeDomainData.length; i++) {
+                    if (Math.abs(timeDomainData[i]) >= settings.clippingThreshold) consecutiveClippedSamples++;
+                    else consecutiveClippedSamples = 0;
+                    if (consecutiveClippedSamples >= settings.minConsecutiveClippedSamples) {
+                        justClipped = true;
+                        break;
+                    }
+                }
+                if (justClipped) {
+                    if (!hasClippedInFrame) {
+                        clipCount++;
+                        hasClippedInFrame = true;
+                    }
+                } else {
+                    hasClippedInFrame = false;
+                }
+                UI.updateClipping(justClipped, clipCount);
+                UI.drawFFT(frequencyData);
+                UI.drawScope(timeDomainData);
+                animationFrameId = requestAnimationFrame(analyze);
+            }
+
+            async function startTest() {
+                Logger.info('Starting THD+N analyzer');
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    Logger.info('Microphone access granted for analyzer');
+                    const source = audioContext.createMediaStreamSource(microphoneStream);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = settings.fftSize;
+                    analyser.smoothingTimeConstant = 0.6;
+                    source.connect(analyser);
+                    timeDomainData = new Float32Array(analyser.fftSize);
+                    frequencyData = new Float32Array(analyser.frequencyBinCount);
+                    isTesting = true;
+                    UI.setAnalyzerButtonState(true);
+                    resetStats();
+                    Logger.debug(`Analyzer configured: FFT size=${settings.fftSize}, smoothing=${analyser.smoothingTimeConstant}`);
+                    analyze();
+                } catch (err) {
+                    Logger.error(`Analyzer failed to start: ${err.message}`);
+                    UI.dom.status.textContent = `Error: ${err.message}.`;
+                    stopTest();
+                }
+            }
+
+            function stopTest() {
+                if (!isTesting) return;
+                Logger.info('Stopping THD+N analyzer');
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (microphoneStream) microphoneStream.getTracks().forEach(track => track.stop());
+                if (audioContext && audioContext.state !== 'closed') audioContext.close();
+                audioContext = null;
+                isTesting = false;
+                UI.setAnalyzerButtonState(false);
+                UI.clearAllVisuals();
+                Logger.debug('Analyzer resources cleaned up');
+            }
+
+            function resetStats() {
+                peakThd = 0;
+                clipCount = 0;
+                UI.resetAnalyzerUI();
+                Logger.debug('Analyzer stats reset');
+            }
+
+            return {
+                init() {
+                    UI.dom.analyzerToggleBtn.addEventListener('click', () => isTesting ? stopTest() : startTest());
+                    UI.dom.analyzerResetBtn.addEventListener('click', resetStats);
+                    UI.dom.noiseGateSlider.oninput = () => {
+                        settings.minSignalDb = parseFloat(UI.dom.noiseGateSlider.value);
+                        UI.dom.noiseGateValue.textContent = settings.minSignalDb;
+                        Logger.debug(`Noise gate set to ${settings.minSignalDb} dB`);
+                    };
+                    UI.dom.clippingSensitivitySlider.oninput = () => {
+                        settings.minConsecutiveClippedSamples = parseInt(UI.dom.clippingSensitivitySlider.value);
+                        UI.dom.clippingSensitivityValue.textContent = settings.minConsecutiveClippedSamples;
+                        Logger.debug(`Clipping sensitivity set to ${settings.minConsecutiveClippedSamples} samples`);
+                    };
+                    Logger.info('THD+N analyzer initialized');
+                },
+                stop: stopTest
+            };
+        })();
+
+        const PolarityTester = (() => {
+            let isPopping = false;
+            let audioContext = null;
+            let microphoneStream = null;
+            let analyser = null;
+            let timeDomainData = null;
+            let poppingInterval = null;
+            let timeoutId = null;
+            let pulseBuffer = null;
+
+            function createPulseBuffer(context) {
+                // Create a single-cycle 100Hz sawtooth wave buffer. More reliable than a DC offset.
+                const frequency = 100;
+                const frameCount = context.sampleRate / frequency;
+                const buffer = context.createBuffer(1, frameCount, context.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < frameCount; i++) {
+                    data[i] = (2 * (i / frameCount)) - 1;
+                }
+                Logger.debug(`Created pulse buffer with ${frameCount} frames at ${frequency}Hz`);
+                return buffer;
+            }
+
+            function playPulse() {
+                if (!audioContext || !pulseBuffer) return;
+                
+                const bufferSource = audioContext.createBufferSource();
+                bufferSource.buffer = pulseBuffer;
+                bufferSource.connect(audioContext.destination);
+                bufferSource.start();
+                Logger.debug('Played test pulse');
+
+                // Analyze the recording after a short delay
+                setTimeout(() => {
+                    if (analyser && timeDomainData) {
+                        analyser.getFloatTimeDomainData(timeDomainData);
+                        let maxVal = 0;
+                        let maxIndex = -1;
+                        
+                        // Find the absolute peak in the waveform data
+                        for (let i = 0; i < timeDomainData.length; i++) {
+                            if (Math.abs(timeDomainData[i]) > maxVal) {
+                                maxVal = Math.abs(timeDomainData[i]);
+                                maxIndex = i;
+                            }
+                        }
+                        
+                        Logger.debug(`Peak analysis: maxVal=${maxVal.toFixed(4)}, maxIndex=${maxIndex}`);
+                        
+                        // If a significant peak was found, check its polarity and stop
+                        if (maxIndex !== -1 && maxVal > 0.02) {
+                            const result = timeDomainData[maxIndex] > 0;
+                            const polarityText = result ? 'In Phase (Normal)' : 'Out of Phase (Inverted)';
+                            Logger.info(`Polarity detected: ${polarityText}`);
+                            UI.displayPolarityResult(result);
+                            stopPopping();
+                        }
+                    }
+                }, 100);
+            }
+
+            async function startPopping() {
+                if (isPopping) return;
+                
+                Logger.info('Starting polarity test with continuous popping');
+                
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                        Logger.debug('Audio context resumed');
+                    }
+
+                    pulseBuffer = createPulseBuffer(audioContext);
+                    microphoneStream = await navigator.mediaDevices.getUserMedia({
+                        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+                    });
+                    Logger.info('Microphone access granted');
+                    
+                    const source = audioContext.createMediaStreamSource(microphoneStream);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 2048;
+                    timeDomainData = new Float32Array(analyser.fftSize);
+                    source.connect(analyser);
+
+                    isPopping = true;
+                    UI.dom.polarityTestBtn.textContent = 'Stop Popping';
+                    UI.displayPolarityResult(null);
+
+                    // Start the continuous popping every 500ms
+                    poppingInterval = setInterval(playPulse, 500);
+                    Logger.info('Started continuous popping (500ms interval)');
+
+                    // Set 1-minute timeout
+                    timeoutId = setTimeout(() => {
+                        Logger.warn('Polarity test timed out after 1 minute');
+                        stopPopping();
+                    }, 60000); // 60 seconds
+
+                } catch (err) {
+                    Logger.error(`Polarity test failed: ${err.message}`);
+                    alert(`Error: ${err.message}`);
+                    stopPopping();
+                }
+            }
+
+            function stopPopping() {
+                if (!isPopping) return;
+
+                Logger.info('Stopping polarity test');
+                isPopping = false;
+                
+                if (poppingInterval) {
+                    clearInterval(poppingInterval);
+                    poppingInterval = null;
+                    Logger.debug('Cleared popping interval');
+                }
+                
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                    Logger.debug('Cleared timeout');
+                }
+                
+                if (microphoneStream) {
+                    microphoneStream.getTracks().forEach(track => track.stop());
+                    microphoneStream = null;
+                    Logger.debug('Released microphone');
+                }
+                
+                if (audioContext) {
+                    audioContext.close();
+                    audioContext = null;
+                    Logger.debug('Closed audio context');
+                }
+
+                analyser = null;
+                timeDomainData = null;
+                pulseBuffer = null;
+                
+                UI.dom.polarityTestBtn.textContent = 'Test Polarity';
+            }
+
+            function togglePopping() {
+                if (isPopping) {
+                    stopPopping();
+                } else {
+                    startPopping();
+                }
+            }
+
+            return {
+                init() {
+                    UI.dom.polarityTestBtn.addEventListener('click', togglePopping);
+                    Logger.info('Polarity tester initialized');
+                }
+            };
+        })();
+
+        // --- Main App Initialization ---
+        function main() {
+            const { dom } = UI;
+
+            function switchTab(targetTab) {
+                Analyzer.stop();
+                dom.analyzerTab.classList.toggle('active', targetTab === 'analyzer');
+                dom.polarityTab.classList.toggle('active', targetTab === 'polarity');
+                dom.analyzerTool.classList.toggle('hidden', targetTab !== 'analyzer');
+                dom.polarityTool.classList.toggle('hidden', targetTab !== 'polarity');
+                Logger.info(`Switched to ${targetTab} tab`);
+            }
+
+            // Logs modal functionality
+            function showLogsModal() {
+                dom.logsModal.classList.remove('hidden');
+                Logger.debug('Opened logs modal');
+            }
+
+            function hideLogsModal() {
+                dom.logsModal.classList.add('hidden');
+                Logger.debug('Closed logs modal');
+            }
+
+            dom.logsBtn.addEventListener('click', showLogsModal);
+            dom.closeLogsBtn.addEventListener('click', hideLogsModal);
+            dom.closeLogsBtn2.addEventListener('click', hideLogsModal);
+            dom.clearLogsBtn.addEventListener('click', () => {
+                Logger.clear();
+                Logger.info('Logs cleared by user');
+            });
+
+            // Close modal when clicking outside
+            dom.logsModal.addEventListener('click', (e) => {
+                if (e.target === dom.logsModal) {
+                    hideLogsModal();
+                }
+            });
+
+            dom.analyzerTab.addEventListener('click', () => switchTab('analyzer'));
+            dom.polarityTab.addEventListener('click', () => switchTab('polarity'));
+            
+            dom.scopeTab.addEventListener('click', () => {
+                dom.scopeCanvas.classList.remove('hidden');
+                dom.fftCanvas.classList.add('hidden');
+                dom.scopeTab.classList.add('active');
+                dom.fftTab.classList.remove('active');
+                Logger.debug('Switched to waveform view');
+            });
+
+            dom.fftTab.addEventListener('click', () => {
+                dom.fftCanvas.classList.remove('hidden');
+                dom.scopeCanvas.classList.add('hidden');
+                dom.fftTab.classList.add('active');
+                dom.scopeTab.classList.remove('active');
+                Logger.debug('Switched to spectrum view');
+            });
+
+            dom.detailsToggleBtn.addEventListener('click', () => {
+                if (dom.detailsPanel.style.maxHeight) {
+                    dom.detailsPanel.style.maxHeight = null;
+                    dom.detailsArrow.style.transform = 'rotate(0deg)';
+                    Logger.debug('Collapsed details panel');
+                } else {
+                    dom.detailsPanel.style.maxHeight = dom.detailsPanel.scrollHeight + "px";
+                    dom.detailsArrow.style.transform = 'rotate(180deg)';
+                    Logger.debug('Expanded details panel');
+                }
+            });
+
+            Logger.info('Audio Tools v1.0.1.1 initialized');
+            Analyzer.init();
+            PolarityTester.init();
+        }
+
+        main();
+    </script>
+</body>
+</html>
