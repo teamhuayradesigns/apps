@@ -52,7 +52,7 @@
     <div id="main-app-container" class="w-full h-screen flex flex-col p-4 sm:h-auto sm:max-w-md sm:mx-auto sm:my-8 sm:rounded-2xl sm:shadow-lg sm:p-6 bg-white dark:bg-slate-800">
         
         <header class="text-center mb-6 flex-shrink-0 relative">
-            <div id="version-display" class="absolute top-0 left-0 text-xs text-gray-400 dark:text-gray-500 -mt-2">v0.9.5.8</div>
+            <div id="version-display" class="absolute top-0 left-0 text-xs text-gray-400 dark:text-gray-500 -mt-2">v0.9.6.0</div>
             <button id="changelog-btn" class="absolute top-8 left-0 flex items-center space-x-2 font-semibold px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
                     <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
@@ -84,10 +84,11 @@
             </button>
         </header>
 
-        <main class="sm:flex-grow-0 overflow-y-auto space-y-4">
-            
-            <!-- Frequency Display -->
-            <div class="flex justify-center items-center h-24 bg-black rounded-lg">
+        <div id="tone-generator-screen">
+            <main class="sm:flex-grow-0 overflow-y-auto space-y-4">
+                
+                <!-- Frequency Display -->
+                <div class="flex justify-center items-center h-24 bg-black rounded-lg">
                 <div id="frequency-value-wrapper" class="p-2 text-center w-auto cursor-pointer">
                     <div id="frequency-text-display">
                         <span id="frequency-value" class="text-4xl font-bold tabular-nums">440</span>
@@ -309,11 +310,58 @@
                     </div>
                 </div>
             </div>
-
         </main>
+    </div>
+
+        <div id="unit-converter-screen" class="hidden">
+            <main class="sm:flex-grow-0 overflow-y-auto space-y-4">
+                <div class="input-group">
+                    <label for="combinedInput" class="font-semibold text-gray-700 dark:text-gray-300 mb-2 block text-sm">Enter a value (e.g., 16.875, 16 7/8, 428.62mm):</label>
+                    <input type="text" id="combinedInput" placeholder="e.g., 16.875, 16 7/8, 428.62mm" class="w-full p-2 text-sm border rounded-lg dark:border-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+            <div class="results space-y-4">
+                <div class="result-group">
+                    <h2 class="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-2">Imperial Units</h2>
+                    <div class="space-y-2">
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Inches (fraction)</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="fractionalResult">---</span>
+                        </div>
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Inches (decimal)</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="decimalInchResult">---</span>
+                        </div>
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Feet</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="feetResult">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-group">
+                    <h2 class="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-2">Metric Units</h2>
+                    <div class="space-y-2">
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Millimeters</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="mmResult">---</span>
+                        </div>
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Centimeters</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="cmResult">---</span>
+                        </div>
+                        <div class="result-item flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <span class="label text-sm text-gray-600 dark:text-gray-300">Meters</span>
+                            <span class="value font-bold text-gray-800 dark:text-white" id="mResult">---</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
         <!-- Action Buttons Footer -->
-        <footer class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 space-y-2">
+        <footer id="app-footer" class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 space-y-2">
             <button id="play-stop-button" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all">Play</button>
             <div class="flex items-center space-x-2">
                 <button id="download-button" class="flex-grow bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed" title="Download a snippet in the selected format and duration">Download Snippet</button>
@@ -343,6 +391,8 @@
                 </button>
             </div>
             <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <li>v0.9.6.0 - Hid irrelevant controls on unit converter screen.</li>
+                <li>v0.9.5.9 - Added unit converter screen and main menu.</li>
                 <li>v0.9.5.8 - Relocated frequency I/O box and reduced explainer text size.</li>
                 <li>v0.9.5.7 - Adjusted title position.</li>
                 <li>v0.9.5.6 - Changed app name, and numerous UI and layout adjustments.</li>
@@ -352,6 +402,26 @@
                 <li>v0.9.5.2 - Added phase inversion, fixed pan control layout, and eliminated audio popping.</li>
                 <li>v0.9.5.1 - Added pan control and stereo download functionality.</li>
             </ul>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-xs">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Menu</h2>
+                <button id="close-menu-btn" class="text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </button>
+            </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li><a href="#" id="show-generator-btn" class="block w-full text-left p-3 rounded-lg font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700">Tone Generator</a></li>
+                    <li><a href="#" id="show-converter-btn" class="block w-full text-left p-3 rounded-lg font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700">Unit Converter</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
 
@@ -365,6 +435,27 @@
             const App = {
                 // --- 1. Cache DOM Elements ---
                 elements: {
+                    // App Screens
+                    toneGeneratorScreen: document.getElementById('tone-generator-screen'),
+                    unitConverterScreen: document.getElementById('unit-converter-screen'),
+                    
+                    // Menu
+                    menuBtn: document.getElementById('menu-btn'),
+                    menuModal: document.getElementById('menu-modal'),
+                    closeMenuBtn: document.getElementById('close-menu-btn'),
+                    showGeneratorBtn: document.getElementById('show-generator-btn'),
+                    showConverterBtn: document.getElementById('show-converter-btn'),
+                    
+                    // Unit Converter
+                    combinedInput: document.getElementById('combinedInput'),
+                    fractionalResult: document.getElementById('fractionalResult'),
+                    decimalInchResult: document.getElementById('decimalInchResult'),
+                    feetResult: document.getElementById('feetResult'),
+                    mmResult: document.getElementById('mmResult'),
+                    cmResult: document.getElementById('cmResult'),
+                    mResult: document.getElementById('mResult'),
+
+                    // Tone Generator
                     bassFreqSlider: document.getElementById('bass-frequency'),
                     midFreqSlider: document.getElementById('mid-frequency'),
                     trebleFreqSlider: document.getElementById('treble-frequency'),
@@ -414,6 +505,8 @@
                     downloadButton: document.getElementById('download-button'),
                     downloadDuration: document.getElementById('download-duration'),
                     downloadFormat: document.getElementById('download-format'),
+                    appTitle: document.querySelector('h1'),
+                    appFooter: document.getElementById('app-footer'),
                 },
 
                 // --- 2. Application State ---
@@ -440,6 +533,7 @@
                 init() {
                     this.audio.createNoiseProcessor();
                     this.ui.addEventListeners();
+                    this.converter.init();
                     this.ui.updateState();
                     this.ui.updateGainColor(this.elements.gainSlider.value);
                     this.ui.updateFrequencyDisplay(this.elements.bassFreqSlider.value);
@@ -450,6 +544,21 @@
                 ui: {
                     addEventListeners() {
                         const elements = App.elements;
+
+                        // Menu controls
+                        elements.menuBtn.addEventListener('click', () => this.showMenu(true));
+                        elements.closeMenuBtn.addEventListener('click', () => this.showMenu(false));
+                        elements.menuModal.addEventListener('click', (e) => {
+                            if (e.target === elements.menuModal) this.showMenu(false);
+                        });
+                        elements.showGeneratorBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.switchScreen('generator');
+                        });
+                        elements.showConverterBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.switchScreen('converter');
+                        });
 
                         elements.playStopButton.addEventListener('click', () => App.audio.togglePlayback());
                         elements.viewToggleButton.addEventListener('click', () => {
@@ -590,6 +699,32 @@
                                 elements.trebleFreqSlider.value = freq;
                             }
                         });
+                    },
+
+                    showMenu(visible) {
+                        App.elements.menuModal.classList.toggle('hidden', !visible);
+                    },
+
+                    switchScreen(screen) {
+                        const { elements } = App;
+                        const isGenerator = screen === 'generator';
+
+                        elements.toneGeneratorScreen.classList.toggle('hidden', !isGenerator);
+                        elements.unitConverterScreen.classList.toggle('hidden', isGenerator);
+                        
+                        elements.appTitle.textContent = isGenerator ? 'Master Generator' : 'Unit Converter';
+                        
+                        // Show/hide elements based on the active screen
+                        elements.appFooter.classList.toggle('hidden', !isGenerator);
+                        elements.viewToggleButton.classList.toggle('hidden', !isGenerator);
+
+                        // Update active button style
+                        elements.showGeneratorBtn.classList.toggle('bg-gray-100', isGenerator);
+                        elements.showGeneratorBtn.classList.toggle('dark:bg-slate-700', isGenerator);
+                        elements.showConverterBtn.classList.toggle('bg-gray-100', !isGenerator);
+                        elements.showConverterBtn.classList.toggle('dark:bg-slate-700', !isGenerator);
+
+                        this.showMenu(false);
                     },
 
                     toggleProfessionalMode() {
@@ -809,7 +944,106 @@
                     },
                 },
 
-                // --- 5. Audio Module ---
+                // --- 5. Converter Module ---
+                converter: {
+                    init() {
+                        App.elements.combinedInput.addEventListener('input', (e) => this.handleInput(e.target.value));
+                    },
+
+                    gcd(a, b) {
+                        return b === 0 ? a : this.gcd(b, a % b);
+                    },
+
+                    toFractional(decimalInches) {
+                        const wholeInches = Math.floor(decimalInches);
+                        const decimalPart = decimalInches - wholeInches;
+                        
+                        let numerator = Math.round(decimalPart * 64);
+                        let finalWholeInches = wholeInches;
+
+                        if (numerator === 64) {
+                            finalWholeInches++;
+                            return `${finalWholeInches}"`;
+                        } else if (numerator === 0) {
+                            return finalWholeInches === 0 ? '0"' : `${finalWholeInches}"`;
+                        } else {
+                            const divisor = this.gcd(numerator, 64);
+                            const simplifiedNumerator = numerator / divisor;
+                            const simplifiedDenominator = 64 / divisor;
+                            const wholePartString = finalWholeInches > 0 ? `${finalWholeInches} ` : '';
+                            return `${wholePartString}${simplifiedNumerator}/${simplifiedDenominator}"`;
+                        }
+                    },
+
+                    convertInches(decimalInches) {
+                        if (isNaN(decimalInches) || decimalInches === null || decimalInches < 0) {
+                            return { fractional: '---', decimalInches: '---', feet: '---', millimeters: '---', centimeters: '---', meters: '---' };
+                        }
+                        const fractionalString = this.toFractional(decimalInches);
+                        const feet = decimalInches / 12;
+                        const millimeters = decimalInches * 25.4;
+                        const centimeters = millimeters / 10;
+                        const meters = centimeters / 100;
+                        return {
+                            fractional: fractionalString,
+                            decimalInches: decimalInches.toFixed(3),
+                            feet: feet.toFixed(2),
+                            millimeters: millimeters.toFixed(2),
+                            centimeters: centimeters.toFixed(2),
+                            meters: meters.toFixed(2)
+                        };
+                    },
+                    
+                    updateResults(decimalValue) {
+                        const results = this.convertInches(decimalValue);
+                        const { elements } = App;
+                        elements.fractionalResult.textContent = results.fractional;
+                        elements.decimalInchResult.textContent = results.decimalInches;
+                        elements.feetResult.textContent = results.feet;
+                        elements.mmResult.textContent = results.millimeters;
+                        elements.cmResult.textContent = results.centimeters;
+                        elements.mResult.textContent = results.meters;
+                    },
+
+                    handleInput(value) {
+                        value = value.trim().toLowerCase();
+                        let decimalValue = NaN;
+
+                        if (value === '') {
+                            this.updateResults(NaN);
+                            return;
+                        }
+
+                        const metricRegex = /([\d.]+)\s*(mm|cm|m)$/;
+                        const metricMatch = value.match(metricRegex);
+
+                        if (metricMatch) {
+                            const number = parseFloat(metricMatch[1]);
+                            const unit = metricMatch[2];
+                            if (!isNaN(number)) {
+                                if (unit === 'mm') decimalValue = number / 25.4;
+                                else if (unit === 'cm') decimalValue = number / 2.54;
+                                else if (unit === 'm') decimalValue = number / 0.0254;
+                            }
+                        } else if (value.includes('/')) {
+                            const fractionalRegex = /^(?:(\d+)\s+)?(\d+)\/(\d+)$/;
+                            const fractionalMatch = value.match(fractionalRegex);
+                            if (fractionalMatch) {
+                                const whole = parseInt(fractionalMatch[1] || '0');
+                                const numerator = parseInt(fractionalMatch[2]);
+                                const denominator = parseInt(fractionalMatch[3]);
+                                if (denominator !== 0) decimalValue = whole + (numerator / denominator);
+                            }
+                        } else {
+                            const parsedValue = parseFloat(value);
+                            if (!isNaN(parsedValue)) decimalValue = parsedValue;
+                        }
+
+                        this.updateResults(decimalValue);
+                    }
+                },
+
+                // --- 6. Audio Module ---
                 audio: {
                     dbToLinear: db => Math.pow(10, db / 20),
 
